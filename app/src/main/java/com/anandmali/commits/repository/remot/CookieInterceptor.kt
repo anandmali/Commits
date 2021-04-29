@@ -6,14 +6,6 @@ import okhttp3.Response
 class CookieInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-
-        val request = chain.request()
-        val url = request.url.toString()
-
-        if (request.header("Add-Cookie-Authentication") != null) {
-            val response = chain.proceed(request)
-        }
-
-        return chain.proceed(request)
+        TODO("Pagination can be implemented here, to fetch next page url from response header")
     }
 }

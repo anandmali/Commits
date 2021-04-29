@@ -8,10 +8,10 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    @GET("users/mralexgray/repos?per_page=50")
+    @GET("users/mralexgray/repos")
     suspend fun getRepoList(): Response<List<RepoModel>>
 
-    @GET("repos/{user}/{repository}/commits?per_page=50")
+    @GET("repos/{user}/{repository}/commits")
     suspend fun getRepoDetails(
         @Path("user") user: String = "mralexgray",
         @Path("repository") repository: String

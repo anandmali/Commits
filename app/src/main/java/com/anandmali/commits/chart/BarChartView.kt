@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.anandmali.commits.R
@@ -26,8 +27,6 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
 
     private var monthTextHeight = 0
     private var countTextHeight = 0
-    private var bottomTextDescent = 0
-    private var bottomTextDescentTop = 0
 
     private val barBackgroundPaint = Paint().apply {
         isAntiAlias = true
@@ -57,6 +56,8 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
         override fun run() {
             var needNewFrame = false
 
+            //For every iteration, calculating next set of animation list values for respective bar to fill values.
+            //This is repeated until respective animation values are equal to the to fill values
             for (i in barToFillPercentList.indices) {
 
                 if (barAnimatePercentList[i] < barToFillPercentList[i]) {
@@ -89,19 +90,14 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
             //Create month text bonds
             monthTextPaint.getTextBounds(s, 0, s.length, r)
 
-            //Making sure text rect width and bar width are aligned equally, to make look good
+            //Considering highest height for the text
             if (monthTextHeight < r.height()) {
                 monthTextHeight = r.height()
             }
+
+            //Making sure text rect width and bar width are aligned equally, to make look good
             if (barWidth < r.width()) {
                 barWidth = r.width()
-            }
-
-            if (bottomTextDescent < abs(r.bottom)) {
-                bottomTextDescent = abs(r.bottom)
-            }
-            if (bottomTextDescentTop < abs(r.top)) {
-                bottomTextDescentTop = abs(r.top)
             }
         }
         minimumWidth = 2
@@ -110,10 +106,13 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
 
     fun setTopTextList(countList: ArrayList<Int>) {
         countTextList.addAll(countList)
+
+        //Create rect for count text
         val r = Rect()
         for (s in countTextList) {
             countTextPaint.getTextBounds(s.toString(), 0, s.toString().length, r)
 
+            //Considering highest height for the text
             if (countTextHeight < r.height()) {
                 countTextHeight = r.height()
             }
@@ -124,6 +123,7 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
     }
 
     fun setDataList(list: ArrayList<Int>, max: Int) {
+        Log.e("set data", list.size.toString())
         //Adding '2' just make graph view distinctive extra space at the top
         val maxValue = max + 5
 
@@ -156,17 +156,21 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
 
     override fun onDraw(canvas: Canvas) {
         if (barAnimatePercentList.isNotEmpty()) {
+
+            //For given lists of animation and toFill values, draw rect
             barAnimatePercentList.forEachIndexed { index, barToFillValue ->
                 drawBackgroundBar(canvas, index)
                 drawForegroundBar(canvas, index, barToFillValue)
             }
 
+            //Drawing months texts at each bar bottom
             if (monthTextList.isNotEmpty()) {
                 monthTextList.forEachIndexed { index, month ->
                     drawMonthText(canvas, index, month)
                 }
             }
 
+            //Drawing commits count text each bar top
             if (countTextList.isNotEmpty()) {
                 countTextList.forEachIndexed { index, count ->
                     drawCountText(canvas, index, count)
@@ -179,7 +183,7 @@ class BarChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
         canvas.drawText(
             "$count",
             ((barSideMargin * (index + 1)) + (barWidth * (index)) + barWidth / 2).toFloat(),
-            (textMargin+countTextHeight).toFloat(),
+            (textMargin + countTextHeight).toFloat(),
             monthTextPaint
         )
     }

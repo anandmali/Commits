@@ -7,7 +7,7 @@ import com.anandmali.commits.api.model.CommitModel
 import com.anandmali.commits.api.model.RepoDetailsModel
 import com.anandmali.commits.databinding.CommitListItemBinding
 
-class CommitListAdapter (
+class CommitListAdapter(
     private val commitList: List<RepoDetailsModel>
 ) :
     RecyclerView.Adapter<CommitListAdapter.ViewHolder>() {

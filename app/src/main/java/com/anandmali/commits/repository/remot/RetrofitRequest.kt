@@ -1,18 +1,15 @@
 package com.anandmali.commits.repository.remot
 
-import android.util.Log
-import androidx.annotation.IntegerRes
+import androidx.annotation.StringRes
+import com.anandmali.commits.R
 import retrofit2.Response
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 fun <R> makeApiCall(response: Response<R>): NetworkResponse<R> {
-    Log.e("makeApiCall ", "call")
     return try {
-        Log.e("try ", "try")
         handleNetworkResponse(response)
     } catch (e: Exception) {
-        Log.e("Exception", e.toString())
         Either.Left(e.getError())
     }
 }
@@ -24,15 +21,11 @@ private fun <R> handleNetworkResponse(
         if (response.isSuccessful) {
             when (response.code()) {
                 in 200..202 -> {
-                    response.body()
-                        ?.run { Either.Right(this) }
-                        ?: Either.Left(
-                            NetworkError.SuccessfulError(
-                                response.code()
-                            )
-                        )
+                    response.body()?.run {
+                        Either.Right(this)
+                    } ?: Either.Left(NetworkError.ResponseParseError(response.code()))
                 }
-                else -> Either.Left(NetworkError.SuccessfulError(response.code()))
+                else -> Either.Left(NetworkError.ResponseParseError(response.code()))
             }
         } else handleErrors(response)
 
@@ -63,43 +56,42 @@ private fun <R> handleErrors(
 sealed class NetworkError(
     open val errorCode: Int,
     open val message: String? = null,
-    @IntegerRes open val messageId: Int? = null
+    @StringRes open val messageId: Int
 ) {
 
-    data class NoNetworkError(
+    data class ExceptionError(
         override val errorCode: Int = DEFAULT_ERROR_CODE,
         override val message: String? = null,
-        override val messageId: Int? = null
+        override val messageId: Int = R.string.exception_err
     ) : NetworkError(errorCode, message, messageId)
 
-    data class SuccessfulError(
+    data class ResponseParseError(
         override val errorCode: Int = DEFAULT_ERROR_CODE,
         override val message: String? = null,
-        override val messageId: Int? = null
+        override val messageId: Int = R.string.repsponse_err
     ) : NetworkError(errorCode, message, messageId)
 
     data class RedirectionError(
         override val errorCode: Int = DEFAULT_ERROR_CODE,
         override val message: String? = null,
-        override val messageId: Int? = null
+        override val messageId: Int = R.string.redirection_err
     ) : NetworkError(errorCode, message, messageId)
 
     data class ClientError(
         override val errorCode: Int = DEFAULT_ERROR_CODE,
-        override val message: String? = "Client error",
-        override val messageId: Int? = null
+        override val message: String? = null,
+        override val messageId: Int = R.string.client_err
     ) : NetworkError(errorCode, message, messageId)
 
     data class ServerError(
         override val errorCode: Int = DEFAULT_ERROR_CODE,
         override val message: String? = null,
-        override val messageId: Int? = null
+        override val messageId: Int = R.string.server_err
     ) : NetworkError(errorCode, message, messageId)
-
 }
 
 fun Throwable.getError() =
-    NetworkError.NoNetworkError(
+    NetworkError.ExceptionError(
         errorCode = this.getErrorCode(),
         message = this.message
     )

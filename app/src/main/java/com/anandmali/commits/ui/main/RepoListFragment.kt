@@ -47,15 +47,15 @@ class RepoListFragment : DaggerFragment() {
             it?.let {
                 when (it) {
                     is Status.Success -> handleResponse(it.data)
-                    is Status.Error -> showError(it.message)
+                    is Status.Error -> showError(it.message, it.id!!)
                     is Status.IsInFlight -> showLoading(it.loading)
                 }
             }
         })
     }
 
-    private fun showError(message: String?) {
-        showSnackBar(message ?: "Some error fetching details")
+    private fun showError(message: String?, id: Int) {
+        showSnackBar(message ?: getString(id))
     }
 
     private fun showLoading(loading: Boolean) {
@@ -67,7 +67,12 @@ class RepoListFragment : DaggerFragment() {
         repoListFragmentBinding.repoList.apply {
             adapter = repoAdapter
             layoutManager = LinearLayoutManager(this@RepoListFragment.activity)
-            addItemDecoration(DividerItemDecoration(this@RepoListFragment.activity, DividerItemDecoration.VERTICAL))
+            addItemDecoration(
+                DividerItemDecoration(
+                    this@RepoListFragment.activity,
+                    DividerItemDecoration.VERTICAL
+                )
+            )
         }
     }
 

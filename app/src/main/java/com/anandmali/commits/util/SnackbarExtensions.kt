@@ -8,7 +8,7 @@ import com.anandmali.commits.R
 import com.google.android.material.snackbar.Snackbar
 
 inline fun Activity.showSnackBar(
-    message: String,
+    message: String?,
     textColor: Int? = null,
     length: Int = Snackbar.LENGTH_LONG,
     f: Snackbar.() -> Unit = {}
@@ -27,12 +27,12 @@ inline fun Fragment.showSnackBar(
 
 
 inline fun View.snack(
-    message: String,
+    message: String?,
     textColor: Int? = null,
     length: Int = Snackbar.LENGTH_LONG,
     f: Snackbar.() -> Unit
 ) {
-    val snack = Snackbar.make(this, message, length)
+    val snack = Snackbar.make(this, message?: "Something went wrong", length)
     val textView = snack.view.findViewById<TextView>(R.id.snackbar_text)
     textView.maxLines = 5
     textColor?.let {

@@ -41,7 +41,10 @@ class DetailsViewModel
     }
 
     private fun handlerError(error: NetworkError) {
-        repoDetailsStatus postFailure error.message
+        error.message?.let {
+            repoDetailsStatus postFailure it
+        } ?: repoDetailsStatus postFailure error.messageId
+
     }
 
 }

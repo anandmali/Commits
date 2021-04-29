@@ -29,6 +29,10 @@ class MutableStatus<R> : MutableLiveData<Status<R>>() {
         postValue(Status.Error(message = message))
     }
 
+    infix fun postFailure(messageId: Int?) {
+        postValue(Status.Error(id = messageId))
+    }
+
     infix fun postInFlight(loading: Boolean) {
         postValue(Status.IsInFlight(loading))
     }

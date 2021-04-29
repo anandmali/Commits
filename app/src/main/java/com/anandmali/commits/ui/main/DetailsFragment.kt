@@ -15,12 +15,9 @@ import com.anandmali.commits.api.model.RepoDetailsModel
 import com.anandmali.commits.databinding.DetailsFragmentBinding
 import com.anandmali.commits.di.AppViewModelFactory
 import com.anandmali.commits.repository.remot.Status
+import com.anandmali.commits.util.getMonth
 import com.anandmali.commits.util.showSnackBar
 import dagger.android.support.DaggerFragment
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -51,12 +48,16 @@ class DetailsFragment : DaggerFragment() {
         viewModel = ViewModelProvider(this, factory).get(DetailsViewModel::class.java)
         viewModel.getRepoDetails(arguments.repoName)
 
+        observeRepoDetails()
+    }
+
+    private fun observeRepoDetails() {
         viewModel.getRepoDetailsObserver().observe(viewLifecycleOwner, {
             showLoading(false)
             it?.let {
                 when (it) {
                     is Status.Success -> showDetails(it.data)
-                    is Status.Error -> showError(it.message)
+                    is Status.Error -> showError(it.message, it.id!!)
                     is Status.IsInFlight -> showLoading(it.loading)
                 }
             }
@@ -67,8 +68,8 @@ class DetailsFragment : DaggerFragment() {
         detailsFragmentBinding.progressBar.isVisible = loading
     }
 
-    private fun showError(message: String?) {
-        showSnackBar(message ?: "Some error fetching details")
+    private fun showError(message: String?, id: Int) {
+        showSnackBar(message ?: getString(id))
     }
 
     private fun showDetails(data: List<RepoDetailsModel>) {
@@ -85,33 +86,22 @@ class DetailsFragment : DaggerFragment() {
             )
         }
 
-        val format: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        format.timeZone = TimeZone.getTimeZone("UTC")
-        val calendar = GregorianCalendar.getInstance()
-
-
+        //Group by month -> list of commits => Map<String, List<RepoDetailsModel>>
         val map = data.groupBy { item ->
-            val stringDate = item.commit.committer.date
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val instant: Instant = Instant.parse(stringDate)
-                instant.atZone(ZoneId.of("UTC")).month.toString()
-            } else {
-                val date = format.parse(stringDate)
-                calendar.time = date!!
-                calendar.get(Calendar.MONTH).toShort()
-            }
+            getMonth(item)
         }
 
+        //Get list of commits count
         val dataList = ArrayList<Int>()
         map.forEach {
             dataList.add(it.value.size)
         }
 
+        //Update bar chart details
         @Suppress("UNCHECKED_CAST")
         val test: ArrayList<String> = map.keys.toMutableList() as ArrayList<String>
         detailsFragmentBinding.barChart.setBottomTextList(test)
         detailsFragmentBinding.barChart.setTopTextList(dataList)
-
         detailsFragmentBinding.barChart.setDataList(dataList, dataList.maxOrNull() ?: 0)
 
     }

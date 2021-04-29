@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Commits</string>
+    <string name="client_err">Client error</string>
+    <string name="repsponse_err">Error while reading the response.</string>
+    <string name="exception_err">An exception thrown.</string>
+    <string name="redirection_err">Error while redirecting</string>
+    <string name="server_err">Error occurred at server</string>
 </resources>

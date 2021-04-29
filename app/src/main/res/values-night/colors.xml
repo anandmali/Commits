@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bar_background">#D5DAD9D9</color>
+    <color name="month">#FFFFFFFF</color>
+    <color name="commit_count">#FFFFFFFF</color>
+</resources>
